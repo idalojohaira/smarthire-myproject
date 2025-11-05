@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<h2>Sign Up</h2>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div>
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<form action="{{ url_for('signup') }}" method="POST" onsubmit="return validateForm()">
+    <div class="form-group">
+        <input type="text" name="username" placeholder="Username" required>
+    </div>
+
+    <div class="form-group">
+        <input type="email" name="email" placeholder="Email" required>
+    </div>
+
+    <div class="form-group">
+        <input type="tel" name="contact" placeholder="Contact Number" pattern="[0-9]{10,11}" required title="Enter a valid 10-11 digit number">
+    </div>
+
+    <!-- Role Selection -->
+    <div class="form-group">
+        <label for="role">Sign up as:</label>
+        <select name="role" id="role" required>
+            <option value="applicant">Applicant</option>
+            <option value="employer">Employer</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group password-wrapper">
+        <input type="password" id="signup-password" name="password" placeholder="Password" required oninput="checkStrength()">
+        <span class="toggle-password" onclick="togglePassword('signup-password')">
+            <svg id="eye-icon-password" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#555" viewBox="0 0 24 24">
+                <path d="M12 5C5 5 1 12 1 12s4 7 11 7 11-7 11-7-4-7-11-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 
+                         5-5 5 2.2 5 5-2.2 5-5 5z"/>
+                <circle cx="12" cy="12" r="2.5"/>
+            </svg>
+        </span>
+    </div>
+
+    <p id="match-message" class="hint"></p>
+
+    <button type="submit">Sign Up</button>
+</form>
+
+<div class="links">
+    <a href="{{ url_for('login') }}">Already have an account?</a>
+</div>
+
+<style>
+/* Alerts */
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+.alert.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.alert.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Form layout */
+form {
+    max-width: 400px;
+    margin: auto;
+}
+.form-group {
+    margin-bottom: 15px;
+    position: relative;
+}
+input {
+    width: 100%;
+    padding: 10px 40px 10px 12px;
+    font-size: 1rem;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Password wrapper alignment */
+.password-wrapper {
+    display: flex;
+    align-items: center;
+}
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+.toggle-password svg {
+    transition: fill 0.2s;
+}
+.toggle-password:hover svg {
+    fill: #007bff;
+}
+
+/* Strength meter */
+#strength-bar {
+    width: 100%;
+    height: 8px;
+    background: #ddd;
+    border-radius: 4px;
+    margin-top: 5px;
+    transition: background 0.3s;
+}
+.hint {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 5px;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1rem;
+    background: #08106E;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+button:hover {
+    background: #0056b3;
+}
+</style>
+
+<script>
+function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+}
+
+function checkStrength() {
+    const password = document.getElementById("signup-password").value;
+    const bar = document.getElementById("strength-bar");
+    const text = document.getElementById("strength-text");
+
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    switch (strength) {
+        case 0:
+            bar.style.background = "#ddd";
+            text.textContent = "Password must be at least 8 characters, include uppercase, number, and symbol.";
+            break;
+        case 1:
+            bar.style.background = "#ff4d4d";
+            text.textContent = "Weak";
+            break;
+        case 2:
+            bar.style.background = "#ffa500";
+            text.textContent = "Medium";
+            break;
+        case 3:
+            bar.style.background = "#3cb371";
+            text.textContent = "Strong";
+            break;
+        case 4:
+            bar.style.background = "#28a745";
+            text.textContent = "Very strong 💪";
+            break;
+    }
+}
+
+function validateForm() {
+    const pwd = document.getElementById("signup-password").value;
+    const confirmPwd = document.getElementById("confirm-password").value;
+    const matchMessage = document.getElementById("match-message");
+
+    if (pwd !== confirmPwd) {
+        matchMessage.textContent = "❌ Passwords do not match.";
+        matchMessage.style.color = "red";
+        return false;
+    } else {
+        matchMessage.textContent = "";
+        return true;
+    }
+}
+
+document.getElementById("confirm-password").addEventListener("input", () => {
+    const pwd = document.getElementById("signup-password").value;
+    const confirmPwd = document.getElementById("confirm-password").value;
+    const matchMessage = document.getElementById("match-message");
+
+    if (confirmPwd.length > 0) {
+        if (pwd === confirmPwd) {
+            matchMessage.textContent = "✅ Passwords match.";
+            matchMessage.style.color = "green";
+        } else {
+            matchMessage.textContent = "❌ Passwords do not match.";
+            matchMessage.style.color = "red";
+        }
+    } else {
+        matchMessage.textContent = "";
+    }
+});
+</script>
+
+{% endblock %}

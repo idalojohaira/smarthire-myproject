@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Employer Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { margin:0; font-family:Arial, sans-serif; background:#E8F1FD; padding-bottom:60px; }
+    .navbar { display:flex; justify-content:space-between; align-items:center; background:#95BEF5; padding:15px 30px; position:sticky; top:0; }
+    .navbar .logo { font-size:20px; font-weight:bold; color:#08106E; }
+    .navbar-right { display:flex; align-items:center; gap:25px; }
+    .navbar .menu { display:flex; gap:20px; }
+    .navbar .menu a { color:#08106E; text-decoration:none; font-weight:bold; position:relative; }
+    .navbar .menu a::after { content:''; position:absolute; left:0; bottom:-3px; width:0; height:2px; background:#08106E; transition:width 0.3s ease; }
+    .navbar .menu a:hover::after { width:100%; }
+    .logout-btn { background:#08106E; color:white; padding:6px 12px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
+    .content { padding:30px; }
+    .card { background:white; padding:20px; border-radius:10px; box-shadow:0px 3px 6px rgba(0,0,0,0.1); margin-bottom:20px; }
+    .image-slider { width:100%; max-width:1500px; height:300px; margin:0 auto 20px auto; overflow:hidden; border-radius:10px; position:relative; }
+    .slides { display:flex; animation:slide 21s infinite; }
+    .slides img { width:100%; flex-shrink:0; height:400px; object-fit:cover; }
+    @keyframes slide { 0%{transform:translateX(0)}30%{transform:translateX(0)}35%{transform:translateX(-100%)}65%{transform:translateX(-100%)}70%{transform:translateX(-200%)}100%{transform:translateX(-200%)} }
+    .stats-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin:30px 0;}
+    .stat-card{background:#08106E;color:white;padding:30px 20px;border-radius:14px;text-align:center;box-shadow:0px 4px 10px rgba(0,0,0,0.2);transition:transform 0.2s;cursor:pointer;}
+    .stat-card:hover{transform:translateY(-5px);background:#0c1c99;}
+    table{width:100%;border-collapse:collapse;margin-top:15px;background:white;border-radius:10px;overflow:hidden;box-shadow:0px 3px 6px rgba(0,0,0,0.1)}
+    table thead{background:#08106E;color:white}
+    table th, table td{padding:12px 15px;text-align:left;border-bottom:1px solid #ddd;vertical-align:top}
+    table tr:hover{background:#f1f4ff}
+    .download-btn{background:#08106E;color:white;padding:5px 10px;border-radius:5px;text-decoration:none;border:none;cursor:pointer}
+    .archive-btn{background:#d9534f;color:white;padding:5px 10px;border:none;border-radius:5px;cursor:pointer}
+    .profile-info{display:flex;gap:40px;align-items:center}
+    .profile-info img{width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #08106E}
+    .profile-details p{margin:5px 0;font-size:16px}
+    .footer{background:#F0F1F7;color:#08106E;text-align:center;padding:15px;font-weight:bold;position:fixed;bottom:0;width:100%}
+    .toast { position: fixed; bottom: 30px; right: 30px; background: #08106E; color: white; padding: 15px 25px; border-radius: 8px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.3); opacity: 0; transform: translateY(20px); transition: all 0.4s ease; z-index: 9999;}
+    .toast.show {opacity: 1; transform: translateY(0);}
+    .show-all-btn { background:#08106E; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:bold; margin-top:15px; cursor:pointer; }
+    .show-all-btn:hover { background:#0c1c99; }
+
+.status-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    color: white;
+    display: inline-block;
+    text-align: center;
+}
+.status-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    color: black;
+    display: inline-block;
+    text-align: center;
+}
+
+/* --- NEW SCREENING FORM STYLES --- */
+.screening-form {
+    padding: 30px;
+    margin-top: 20px;
+    border: 1px solid #c7d8f9; /* Light blue border */
+    border-radius: 12px;
+    background: #f8fbff; /* Very light background for contrast */
+    box-shadow: 0 4px 10px rgba(8, 16, 110, 0.08); /* Subtle shadow */
+    margin-bottom: 30px;
+}
+
+.form-group-section {
+    margin-bottom: 25px; /* Increased spacing between sections */
+}
+
+.form-label {
+    display: block;
+    font-weight: bold;
+    color: #08106E; /* Primary text color */
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+
+.form-input-file,
+.form-textarea,
+.form-select {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #95BEF5; /* Blue border for inputs */
+    border-radius: 6px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-input-file:focus,
+.form-textarea:focus,
+.form-select:focus {
+    border-color: #08106E;
+    box-shadow: 0 0 0 3px rgba(8, 16, 110, 0.1);
+    outline: none;
+}
+
+.screen-btn {
+    /* Uses the existing .download-btn style but explicitly colors it */
+    background: #08106E;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 1.05em;
+}
+
+.screen-btn:hover {
+    background: #0c1c99;
+}
+/* --- END NEW SCREENING FORM STYLES --- */
+
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">SmartHire Employer</div>
+    <div class="navbar-right">
+      <div class="menu">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#profile">Profile</a>
+        <a href="#job-posting">Job Posting</a>
+        <a href="#uploaded-resume">Uploaded Resume</a>
+        <a href="#resume-screening">Resume Screening</a>
+      </div>
+      <form action="/" method="GET"><button class="logout-btn">Logout</button></form>
+    </div>
+  </div>
+
+  <div class="content">
+    <h1>Welcome, Employer!</h1>
+
+    <div class="card" id="dashboard">
+      <div class="image-slider">
+        <div class="slides">
+          <img src="{{ url_for('static', filename='images/dashboardE1.jpg') }}" alt="Slide 1">
+          <img src="{{ url_for('static', filename='images/dashboardE2.jpg') }}" alt="Slide 2">
+          <img src="{{ url_for('static', filename='images/dashboardE3.jpg') }}" alt="Slide 3">
+        </div>
+      </div>
+
+      <div class="dashboard-overview">
+        <h2>📊 Dashboard Overview</h2>
+        <p>Click a section below to view detailed records.</p>
+
+        <div class="stats-container">
+          <div class="stat-card" onclick="showDetails('job_postings')"><h3>Job Posted</h3><p>{{ jobs|length }}</p></div>
+          <div class="stat-card" onclick="showDetails('uploaded_resumes')"><h3>Uploaded Resume</h3><p>{{ resumes|length }}</p></div>
+          <div class="stat-card" onclick="showDetails('interviews')"><h3>Interviews Scheduled</h3><p>{{ interviews|length if interviews else 0 }}</p></div>
+        </div>
+
+        <div class="card" id="detailed-records">
+          <h2>📑 Detailed Records</h2>
+          <div id="details-content">
+            <p>Select a section above to view detailed records.</p>
+          </div>
+          <button class="show-all-btn" onclick="showDetails('all')">Show All Records</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employer Profile -->
+    <div class="card" id="profile">
+      <h2>👤 Employer Profile</h2>
+      <div class="profile-info">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile Picture">
+        <div class="profile-details">
+          <p><strong>Full Name:</strong> John Doe</p>
+          <p><strong>Email:</strong> johndoe@example.com</p>
+          <p><strong>Position:</strong> HR Manager</p>
+          <p><strong>Phone:</strong> +63 912 345 6789</p>
+          <p><strong>Member Since:</strong> January 2024</p>
+        </div>
+      </div>
+    </div>
+
+<!-- Job Posting -->
+<div class="card" id="job-posting">
+  <h2>💼 Job Posting</h2>
+  <a href="{{ url_for('add_job_page') }}" class="download-btn">Add Job</a>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Company</th>
+        <th>Status</th>
+        <th>Date Posted</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td>{{ job.id }}</td>
+        <td>{{ job.title }}</td>
+        <td>{{ job.company }}</td>
+        <td>
+          {% if job.status.lower() == 'pending' %}
+            <span class="status-badge status-pending">{{ job.status }}</span>
+          {% elif job.status.lower() == 'approved' %}
+            <span class="status-badge status-approved">{{ job.status }}</span>
+          {% else %}
+            <span class="status-badge">{{ job.status }}</span>
+          {% endif %}
+        </td>
+        <td>{{ job.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>
+          <form action="{{ url_for('edit_job', job_id=job.id) }}" method="GET" style="display:inline;">
+            <button type="submit" class="download-btn">Edit</button>
+          </form>
+          <form action="{{ url_for('delete_job', job_id=job.id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="archive-btn">Archive</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Uploaded Resume -->
+<div class="card" id="uploaded-resume">
+    <h2>📂 Uploaded Resume</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Applicant Name</th>
+                <th>Resume</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resume in resumes %}
+            {# Check if the filename DOES NOT start with 'screen_' to filter out manual screens #}
+            {% if not resume.filename.startswith('screen_') %}
+            <tr>
+                <td>{{ resume.owner_name | default('N/A') }}</td>
+                <td>{{ resume.filename }}</td>
+                <td>
+                    <a href="{{ url_for('download_resume', filename=resume.filename) }}" class="download-btn" target="_blank">Download</a>
+                    
+                    <form action="{{ url_for('delete_resume', resume_id=resume.id) }}" method="POST" style="display:inline; margin-left: 10px;">
+                        <button type="submit" class="archive-btn">Archive</button>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+    <!-- Resume Screening -->
+<div class="card" id="resume-screening">
+    <h2>📝 Resume Screening</h2>
+
+<p>Upload a PDF resume and paste the required job description to see an instant match score.</p>
+
+<form action="{{ url_for('upload_screening') }}" method="POST" enctype="multipart/form-data" class="screening-form">
+    
+    <div class="form-group-section">
+        <label for="resume_file" class="form-label">Upload Resume (PDF only):</label>
+        <input type="file" name="resume_file" id="resume_file" accept=".pdf" required class="form-input-file">
+    </div>
+
+    <div class="form-group-section">
+        <label for="job_description" class="form-label">Paste Job Description:</label>
+        <textarea name="job_description" id="job_description" rows="6" required placeholder="Paste the job requirements and description here. This will be used for skill matching." class="form-textarea"></textarea>
+    </div>
+    
+    <div class="form-group-section">
+        <label for="job_id" class="form-label">Optional: Link to Job Post</label>
+        <select name="job_id" id="job_id" class="form-select">
+            <option value="">-- Select an Existing Job Post (Optional) --</option>
+            {% for job in jobs %}
+                <option value="{{ job.id }}">{{ job.title }} (ID: {{ job.id }})</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit" class="screen-btn">
+        Screen Resume
+    </button>
+</form>
+{% if screenings %}
+        <h4 style="margin-top:40px;">✅ Already Screened Resumes (Total: {{ screenings|length }})</h4>
+        <table style="width:100%;"> 
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Applicant Name</th>
+                    <th>Email</th>
+                    <th>Matched Skills</th> 
+                    <th>Score</th>
+                    <th>Screened Date</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in screenings %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    <td>{{ s.applicant_name | default('N/A') }}</td>
+                    <td>{{ s.applicant_email | default('N/A') }}</td>
+                    <td>{{ s.matched_skills | default('N/A') | truncate(40) }}</td>
+                    <td>{{ s.match_score | round(2) }}%</td>
+                    <td>{{ s.screened_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td style="text-align: center;">
+                        <form action="{{ url_for('delete_screening', screening_id=s.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="archive-btn">Archive</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="margin-top:15px;">No resumes have been screened yet. Use the form above to begin!</p>
+    {% endif %}
+</div>
+
+<footer class="footer">© 2025 SmartHire. All rights reserved.</footer>
+
+<script>
+    function showDetails(type) {
+        let content = "";
+        
+        // --- Dashboard Overview Click Handlers ---
+        if (type === "job_postings") {
+            content = `
+                <h3>💼 Total Job Postings</h3>
+                <table>
+                    <thead><tr><th>ID</th><th>Title</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% for job in jobs %}
+                            <tr><td>{{ job.id }}</td><td>{{ job.title }}</td><td>{{ job.status }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>`;
+        } else if (type === "uploaded_resumes") {
+            content = `
+                <h3>📂 Uploaded Resumes</h3>
+                <table>
+                    <thead><tr><th>Applicant</th><th>File Name</th></tr></thead>
+                    <tbody>
+                        {% for resume in resumes %}
+                            <tr><td>{{ resume.owner_name | default('Applicant ID ' ~ resume.applicant_id) }}</td><td>{{ resume.filename }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>`;
+        } else if (type === "shortlisted") {
+            // Updated to use the reliable s.applicant_name | default('N/A')
+            content = `
+                <h3>⭐ Shortlisted Resumes (Match Score > 80%)</h3>
+                <table>
+                    <thead><tr><th>Applicant</th><th>Match Score</th></tr></thead>
+                    <tbody>
+                        {% for s in screenings %} 
+                            {% if s.match_score > 80 %}  
+                                <tr>
+                                    <td>{{ s.applicant_name | default('N/A') }}</td>
+                                    <td>{{ s.match_score }}%</td>
+                                </tr>
+                            {% endif %}         
+                        {% endfor %}
+                    </tbody>
+                </table>`;
+        } else if (type === "interviews") {
+            content = `
+                <h3>🗓️ Interviews Scheduled</h3>
+                <p>This feature requires a dedicated 'interviews' data structure to display.</p>
+                `;
+        }
+        
+        // --- CORRECTED "Show All Records" logic ---
+        else if (type === "all") {
+            content = `
+                <h3>📋 All Records Overview</h3>
+                <p>This section provides a consolidated view of all data in the system.</p>
+
+                <h4 style="margin-top:20px;">💼 Job Postings (Total: {{ jobs|length }})</h4>
+                <table>
+                    <thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody>
+                        {% for job in jobs %}
+                            <tr><td>{{ job.id }}</td><td>{{ job.title }}</td><td>{{ job.status }}</td><td>{{ job.created_at.strftime('%Y-%m-%d') }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h4 style="margin-top:20px;">📂 Uploaded Resumes (Total: {{ resumes|length }})</h4>
+                <table>
+                    <thead><tr><th>ID</th><th>Applicant Name</th><th>File Name</th></tr></thead>
+                    <tbody>
+                        {% for resume in resumes %}
+                            <tr><td>{{ resume.id }}</td><td>{{ resume.owner_name | default('Applicant') }}</td><td>{{ resume.filename }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h4 style="margin-top:20px;">📝 Screened Resumes (Total: {{ screenings|length }})</h4>
+                <table>
+                    <thead><tr><th>ID</th><th>Applicant</th><th>Score</th><th>Screened Date</th></tr></thead>
+                    <tbody>
+                        {% for s in screenings %}
+                            <tr>
+                                <td>{{ s.id }}</td>
+                                <td>{{ s.applicant_name | default('N/A') }}</td>
+                                <td>{{ s.match_score }}%</td>
+                                <td>{{ s.screened_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        document.getElementById("details-content").innerHTML = content;
+    }
+</script>
+</body>
+</html>

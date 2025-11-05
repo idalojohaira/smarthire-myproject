@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Job</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #C3EBFF; margin: 0; padding: 0; }
+    .container { max-width: 700px; margin: 50px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+    h1 { text-align: center; color: #08106E; }
+    form { display: flex; flex-direction: column; gap: 15px; }
+    label { font-weight: bold; color: #08106E; }
+    input, textarea, select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+    }
+    textarea { resize: vertical; height: 100px; }
+    .button-group {
+      display: flex;
+      justify-content: flex-start;
+      gap: 15px; /* space between buttons */
+      margin-top: 20px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      text-align: center;
+      display: inline-block;
+      line-height: normal;
+    }
+    .save-btn { background: #08106E; color: white; }
+    .save-btn:hover { background: #2a35b5; }
+    .cancel-btn { background: #ccc; color: black; text-decoration: none; display: inline-block; }
+    .cancel-btn:hover { background: #bbb; }
+  </style>
+</head>
+<body>
+<div class="container">
+    
+    <h1>{% if job is defined %}Edit Job Posting{% else %}Add New Job{% endif %}</h1>
+
+    {% if job is defined %}
+    <form method="POST" action="{{ url_for('edit_job', job_id=job.id) }}">
+    {% else %}
+    <form method="POST" action="{{ url_for('submit_job') }}">
+    {% endif %}
+
+        <label>Job Title</label>
+        <input type="text" name="title" value="{{ job.title if job is defined else '' }}" required>
+	
+	<label for="company">Company</label>
+<input type="text" id="company" name="company" required>
+        
+	<label>Location</label>
+        <input type="text" name="location" value="{{ job.location if job is defined else '' }}" required>
+
+        <label>Job Type</label>
+        <select name="job_type">
+            <option value="Full-Time" {% if job is defined and job.job_type == "Full-Time" %}selected{% endif %}>Full-Time</option>
+            <option value="Part-Time" {% if job is defined and job.job_type == "Part-Time" %}selected{% endif %}>Part-Time</option>
+            <option value="Internship" {% if job is defined and job.job_type == "Internship" %}selected{% endif %}>Internship</option>
+            <option value="Contract" {% if job is defined and job.job_type == "Contract" %}selected{% endif %}>Contract</option>
+        </select>
+
+        <label>Salary</label>
+        <input type="text" name="salary" value="{{ job.salary if job is defined else '' }}">
+
+        <label>Job Description</label>
+        <textarea name="description">{{ job.description if job is defined else '' }}</textarea>
+
+        <div class="button-group">
+        <button type="submit" class="btn save-btn">Submit</button>
+        <a href="{{ url_for('employer_dashboard') }}" class="btn cancel-btn">Cancel</a>
+    </div>
+
+    </form>
+
+</div>
+</body>
+</html>

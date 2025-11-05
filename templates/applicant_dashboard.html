@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Applicant Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #E8F1FD;
+      --card: #ffffff;
+      --accent: #95BEF5;
+      --accent-dark: #4A6CF7;
+      --nav-bg: #95BEF5;
+      --text-dark: #08106E;
+      --muted: #6b7aa8;
+      --glass: rgba(255,255,255,0.7);
+      --glass-2: rgba(243,246,255,0.9);
+      --success: #0c9a3e;
+      --pending: #e6a700;
+      --applied: #0a5ddb;
+      --shadow: 0 6px 18px rgba(9,30,66,0.08);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, var(--bg) 0%, #F5FAFF 100%);
+      color: var(--text-dark);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding-bottom: 80px;
+      scroll-behavior: smooth;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(90deg, var(--nav-bg), rgba(149,190,245,0.9));
+      padding: 15px 28px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 14px rgba(12,40,100,0.06);
+      backdrop-filter: blur(6px);
+    }
+    .navbar .logo {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      font-size:18px;
+      font-weight:800;
+      color: var(--text-dark);
+    }
+    .logo .dot {
+      width:34px;height:34px;border-radius:8px;
+      display:inline-block;
+      background: linear-gradient(135deg,var(--accent-dark), #6fa1ff);
+      box-shadow: 0 6px 18px rgba(74,108,247,0.18);
+      color:white; display:flex; align-items:center; justify-content:center;
+      font-weight:800; font-size:14px;
+    }
+    .navbar .right-side {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+    .navbar .menu {
+      display: flex;
+      gap: 18px;
+    }
+    .navbar .menu a {
+      color: var(--text-dark);
+      text-decoration: none;
+      font-weight: 700;
+      font-size:14px;
+      padding:6px 8px;
+      border-radius:8px;
+      transition: all .18s ease;
+    }
+    .navbar .menu a:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+    .logout-btn {
+      background: var(--text-dark);
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(8,16,78,0.12);
+      transition: transform .18s ease;
+    }
+    .logout-btn:hover { transform: translateY(-3px) }
+
+    /* Page content container */
+    .content {
+      max-width:1100px;
+      margin: 26px auto;
+      padding: 0 20px;
+    }
+
+    h1{margin:0 0 14px 0;font-weight:800;letter-spacing:-0.2px}
+    h2{margin:0 0 10px 0;font-size:18px;font-weight:700}
+
+    .row {
+      display:flex;
+      gap:20px;
+      align-items:flex-start;
+    }
+
+    /* Main column only (we removed side column) */
+    .main {
+      width: 100%;
+    }
+
+    /* hide side (if any left by mistake) */
+    .side { display:none; }
+
+    .card {
+      background: var(--card);
+      padding:18px;
+      border-radius:14px;
+      box-shadow: var(--shadow);
+      margin-bottom:18px;
+      border: 1px solid rgba(10,30,85,0.03);
+    }
+
+    /* Make all cards inside the main column full width and aligned */
+    .dashboard-content-container { display:block; gap:18px; }
+    .dashboard-content-container .card { width:100%; }
+
+    .image-slider {
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+    .slides {
+        display: flex;
+        width: 300%;
+        transition: transform 0.5s ease-in-out;
+    }
+
+    .slides img {
+        width: calc(100% / 3);
+        height: auto;
+        display: block;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .stats {
+      display:flex;
+      gap:18px;
+      align-items:center;
+    }
+    .stat {
+      flex:1;
+      background: #08106E;
+      border-radius:10px;
+      padding:12px;
+      text-align:center;
+      transition: transform .18s ease, box-shadow .18s ease;
+      cursor:default;
+    }
+    .stat:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(9,30,66,0.10) }
+    .stat .num { font-size:20px; font-weight:800; color: #ffffff }
+    .stat .label{ font-size:13px; color: #ffffff; margin-top:6px }
+
+    .profile-top {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .avatar {
+      width:72px;height:72px;border-radius:14px;
+      background:linear-gradient(135deg,#dfeeff,#f6fbff);
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;color:var(--accent-dark);font-weight:800;
+      box-shadow: 0 8px 20px rgba(74,108,247,0.08);
+      border: 1px solid rgba(74,108,247,0.08);
+      flex-shrink:0;
+    }
+    .profile-meta { flex:1 }
+    .profile-meta .name { font-size:16px; font-weight:800 }
+    .profile-meta .role { font-size:13px; color:var(--muted); margin-top:4px }
+
+    .progress-wrap { margin-top:12px }
+    .progress {
+      height:12px;border-radius:999px;background:#e9f1ff;overflow:hidden;border:1px solid rgba(74,108,247,0.06)
+    }
+    .progress .bar {
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: linear-gradient(90deg,var(--accent-dark), #6fa1ff);
+      box-shadow: 0 6px 18px rgba(74,108,247,0.12);
+      transition: width .9s cubic-bezier(.2,.9,.2,1);
+    }
+    .progress-meta { display:flex;justify-content:space-between;margin-top:8px;font-size:13px;color:var(--muted) }
+
+    .search-bar {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .search-bar input[type="text"] {
+      flex:1;padding:10px 12px;border-radius:10px;border:1px solid #dbe9ff;background:#fbfdff;
+      font-size:14px;outline:none;box-shadow:0 6px 18px rgba(13,40,115,0.03)
+    }
+    .filter-select {
+      min-width:160px;padding:10px 12px;border-radius:10px;border:1px solid #dbe9ff;background:#fbfdff;font-size:14px;
+    }
+
+    .job-grid { display:grid; grid-template-columns:1fr; gap:12px; margin-top:8px }
+    .job-card {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      padding:12px;
+      border-radius:12px;
+      background: linear-gradient(180deg, #ffffff, #fbfdff);
+      border:1px solid rgba(11,56,128,0.03);
+      box-shadow: 0 6px 18px rgba(9,30,66,0.04);
+      transition: transform .22s cubic-bezier(.2,.9,.2,1), box-shadow .22s ease;
+      cursor: pointer;
+    }
+    .job-card:hover {
+      transform: translateY(-8px) scale(1.01);
+      box-shadow: 0 18px 40px rgba(9,30,66,0.10);
+    }
+    .job-left { display:flex; gap:12px; align-items:center; flex:1 }
+    .comp-logo {
+      width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#eaf4ff,#f6fbff);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent-dark);
+      font-size:14px;border:1px solid rgba(74,108,247,0.06)
+    }
+    .job-info .title { font-weight:800 }
+    .job-info .meta { font-size:13px;color:var(--muted);margin-top:6px }
+
+    .job-right { text-align:right; min-width:170px }
+    .salary { font-weight:800; color:var(--text-dark); display:block }
+    .apply-btn {
+      margin-top:8px;
+      display:inline-block;
+      background: #08106E;
+      color: white;
+      padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700;
+      transition: transform .18s ease, box-shadow .18s ease;
+}
+a.apply-btn {
+  background: var(--text-dark) !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+    .job-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size:14px;
+    }
+    .job-table th, .job-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eef5ff;
+    }
+    .job-table th {
+      background:  #08106E;
+      color: white;
+      font-weight:700;
+      border-radius:6px;
+    }
+
+    .status-pill {
+      padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px;
+    }
+    .status-applied { background: rgba(10,93,219,0.08); color: var(--applied) }
+    .status-pending { background: rgba(230,167,0,0.08); color: var(--pending) }
+    .status-interview { background: rgba(12,154,62,0.08); color: var(--success) }
+
+    .resume-box {
+      background: linear-gradient(180deg,#f7fbff, #ffffff);
+      border:1px dashed rgba(74,108,247,0.12);
+      padding:12px;
+      border-radius:10px;
+      margin-top:14px;
+      text-align:center;
+    }
+    .resume-box a { text-decoration:none; font-weight:800; color:var(--accent-dark) }
+
+    .footer {
+      background: #F0F1F7;
+      color: var(--text-dark);
+      text-align: center;
+      padding: 15px;
+      font-weight: 700;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      box-shadow: 0px -2px 6px rgba(0,0,0,0.05);
+      z-index:100;
+    }
+
+    @media (max-width: 940px){
+      .row { flex-direction:column }
+      .main { width:100% }
+      .job-right { text-align:left; min-width:auto }
+      .profile-top { flex-direction:row; align-items:center }
+    }
+
+    .count-up { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+
+<body>
+
+  <div class="navbar">
+    <div class="logo">SmartHire Applicant</div>
+    <div class="right-side">
+      <div class="menu">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#profile">Profile</a>
+        <a href="#job-list">Job List</a>
+        <a href="#upload-resume">Upload Resume</a>
+        <a href="#job-history">Job History</a>
+      </div>
+      <form action="{{ url_for('logout') }}" method="POST">
+        <button class="logout-btn">Logout</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="alert" class="card" style="position:fixed;right:24px;top:80px;z-index:2000;opacity:0;transform:translateY(-10px);transition:all .45s cubic-bezier(.2,.9,.2,1)">
+    <strong>Welcome back!</strong> Your profile is ready — keep it up ✨
+  </div>
+
+  <div class="content">
+    <h1>Welcome, {{ applicant.fullname }} 👋</h1>
+
+    <div class="row">
+      <div class="main">
+        <!-- Dashboard slider -->
+        <div class="card" id="dashboard">
+          <div class="image-slider">
+            <div class="slides">
+              <img src="{{ url_for('static', filename='images/dashboardE1.jpg') }}" alt="Dashboard Slide 1: Tips on Applications">
+              <img src="{{ url_for('static', filename='images/dashboardE2.jpg') }}" alt="Dashboard Slide 2: Interview Prep Guide">
+              <img src="{{ url_for('static', filename='images/dashboardE3.jpg') }}" alt="Dashboard Slide 3: New Job Matches">
+            </div>
+          </div>
+        </div>
+
+        <!-- All main pages stacked and aligned inside main column -->
+        <div class="dashboard-content-container">
+
+          <!-- Profile (moved into main) -->
+          <div class="card" id="profile">
+            <div class="profile-top">
+              <div class="avatar" id="avatar-text">
+                {% if applicant.profile_image_url %}
+                <img src="{{ applicant.profile_image_url }}"
+                     alt="{{ applicant.fullname }} Profile Picture"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 14px;">
+                {% else %}
+                {{ (applicant.fullname or '')[:2]|upper }}
+                {% endif %}
+              </div>
+              <div class="profile-meta">
+                <div class="name" id="display-name">{{ applicant.fullname }}</div>
+                <div class="role">{{ applicant.target_job or 'Looking for opportunities' }}</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;font-size:14px;color:var(--muted)">
+              <strong>Skills:</strong> {{ applicant.skills or '—' }}
+            </div>
+
+            <div class="progress-wrap" style="margin-top:12px">
+              <div class="progress">
+                <div class="bar" id="progress-bar"></div>
+              </div>
+              <div class="progress-meta">
+                <span>Profile Completion</span>
+                <span id="profile-percent">0%</span>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:18px;">
+              <a href="{{ url_for('edit_profile') }}"
+                 class="apply-btn"
+                 style="flex:1; text-align:center;">
+                Edit Profile
+              </a>
+
+{% if applicant.resume_filename %}
+              <a href="{{ url_for('uploaded_file', filename=applicant.resume_filename) }}" target="_blank"
+                 class="apply-btn"
+                 style="flex:1; text-align:center;">
+                View Resume
+              </a>
+              {% else %}
+              <button class="apply-btn"
+                      onclick="window.location.href='#upload-resume';"
+                      style="flex:1; text-align:center; background-color: var(--success);">
+                Upload Resume
+              </button>
+              {% endif %}
+            </div>
+
+            <div id="edit-profile-form" style="display:none; margin-top:12px; border-top:1px solid #eef5ff; padding-top:12px;">
+              <label for="edit-fullname" style="display:block;font-weight:700;margin-bottom:6px">Full Name</label>
+              <input type="text" id="edit-fullname" value="{{ applicant.fullname }}" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #dbe9ff; margin-bottom:10px;">
+
+              <label for="edit-jobtitle" style="display:block;font-weight:700;margin-bottom:6px">Target Job Title</label>
+              <input type="text" id="edit-jobtitle" value="{{ applicant.target_job or '' }}" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #dbe9ff; margin-bottom:10px;">
+
+              <button type="button" onclick="saveProfile()" class="apply-btn" style="width:100%">💾 Save</button>
+            </div>
+          </div>
+          <!-- End profile -->
+
+          <!-- Job List -->
+          <div class="card" id="job-list">
+            <h2>💼 Job List</h2>
+            <p style="margin:6px 0 10px 0;color:var(--muted)">Recommended opportunities based on your profile — refine with search & filters.</p>
+
+            <div class="search-bar">
+              <input id="job-search" type="text" placeholder="Search job title, company, or location..." aria-label="Search jobs">
+              <select id="job-filter" class="filter-select" aria-label="Filter by location">
+                <option value="all">All locations</option>
+                <option value="Pasig City">Pasig City</option>
+                <option value="Remote">Remote</option>
+              </select>
+            </div>
+
+            <div id="jobs" class="job-grid">
+              {% for job in jobs %}
+              <div class="job-card" data-title="{{ job.title }}" data-location="{{ job.location }}">
+                <div class="job-left">
+                  <div class="comp-logo">{{ job.company[:2]|upper }}</div>
+                  <div class="job-info">
+                    <div class="title">{{ job.title }}</div>
+                    <div class="meta">{{ job.company }} • {{ job.location }} • {{ job.job_type }}</div>
+                  </div>
+                </div>
+                <div class="job-right">
+                  <div class="salary">{{ job.salary }}</div>
+                  {% if job.id in applied_job_ids %}
+                  <button class="apply-btn" disabled>Applied</button>
+                  {% else %}
+                  <button class="apply-btn" onclick="applyJob('{{ job.title }}','{{ job.company }}')">Apply</button>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- End Job List -->
+
+          <!-- Upload Resume -->
+          <div class="card" id="upload-resume">
+            <h2>📂 Upload Resume</h2>
+            <p style="margin:6px 0 12px 0;color:var(--muted)">
+              Update your resume and target job title to improve matches.
+            </p>
+
+            <form class="upload-form" action="{{ url_for('upload_resume') }}" method="POST" enctype="multipart/form-data" onsubmit="submitApplication(event)">
+              <div style="margin-bottom:10px">
+                <label for="fullname" style="display:block;font-weight:700;margin-bottom:6px">Full Name</label>
+                <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" value="{{ applicant.fullname }}" required style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #dbe9ff;">
+              </div>
+
+              <div style="margin-bottom:10px">
+                <label for="jobtitle" style="display:block;font-weight:700;margin-bottom:6px">Job Title Applying For</label>
+                <input type="text" id="jobtitle" name="jobtitle" placeholder="Enter the job title" value="{{ applicant.target_job or '' }}" required style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #dbe9ff;">
+              </div>
+
+              <div style="margin-bottom:14px">
+                <label style="display:block;font-weight:700;margin-bottom:6px">Upload Resume (PDF only)</label>
+                <div style="display:flex; gap:12px; align-items:center;">
+                  <div id="file-name" style="flex:1; font-style:italic; color:var(--muted);">
+                    {{ applicant.resume_filename or 'No file chosen' }}
+                  </div>
+                  <label for="resume" class="apply-btn" style="cursor:pointer; background:#08106E; color:white; padding:8px 12px; border-radius:10px;">
+                    Choose File
+                  </label>
+                  <input type="file" id="resume" name="resume" accept="application/pdf" style="display:none;">
+                </div>
+              </div>
+
+              <div>
+                <button type="submit" class="apply-btn" style="width:180px">🚀 Submit Application</button>
+              </div>
+            </form>
+          </div>
+          <!-- End Upload Resume -->
+
+          <!-- Job History -->
+          <div class="card" id="job-history">
+            <h2>📝 Job History</h2>
+            <p style="margin:6px 0 12px 0;color:var(--muted)">Your recent applications and statuses.</p>
+
+            <table class="job-table" aria-label="Job history">
+              <thead>
+                <tr>
+                  <th>Job Title</th>
+                  <th>Company</th>
+                  <th>Date Applied</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+<tbody id="history-body">
+    {% for app in applications %}
+    <tr>
+        
+        {% if app.job %}
+            <td>{{ app.job.title }}</td>
+            <td>{{ app.job.company }}</td>
+            <td>{{ app.created_at.date() }}</td>
+        {% else %}
+            <td colspan="2" style="color: #c72c41; font-style: italic;">[Job Post Deleted]</td>
+            <td>{{ app.created_at.date() }}</td>
+        {% endif %}
+        
+        <td>
+            <span class="status-pill 
+                {% if app.status == 'Submitted' %}status-applied
+                {% elif app.status == 'Pending' %}status-pending
+                {% elif app.status == 'Interview' %}status-interview
+                {% endif %}">
+                {{ app.status }}
+            </span>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="4" style="text-align: center; padding: 15px; color:var(--muted)">
+            No applications found yet. Start applying!
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+            </table>
+
+            <div class="resume-box">
+              📄 Latest Uploaded Resume:
+              {% if applicant.resume_filename %}
+              <a href="{{ url_for('uploaded_file', filename=applicant.resume_filename) }}" target="_blank">View / Download</a>
+              {% else %}
+              <span style="color:var(--muted)">No resume uploaded</span>
+              {% endif %}
+            </div>
+          </div>
+          <!-- End Job History -->
+
+        </div> <!-- end dashboard-content-container -->
+
+      </div> <!-- end main -->
+    </div> <!-- end row -->
+  </div> <!-- end content -->
+
+  <footer class="footer">
+    © 2025 SmartHire. All rights reserved.
+  </footer>
+
+<script>
+    // slider variables
+    let currentSlide = 0;
+    const totalSlides = 3;
+
+    function moveSlider() {
+      const slidesContainer = document.querySelector('.slides');
+      if (!slidesContainer) return;
+      slidesContainer.style.transform = `translateX(-${currentSlide * (100 / totalSlides)}%)`;
+    }
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      moveSlider();
+    }
+    setInterval(nextSlide, 5000);
+
+    // floating alert + setup on load
+    window.addEventListener('load', () => {
+      const a = document.getElementById('alert');
+      if (a) {
+        a.style.opacity = 1;
+        a.style.transform = 'translateY(0)';
+        setTimeout(()=>{ a.style.opacity=0; a.style.transform='translateY(-10px)' }, 3200);
+      }
+
+      // set progress bar (example value)
+      const percent = 72;
+      const pb = document.getElementById('progress-bar');
+      const pp = document.getElementById('profile-percent');
+      if (pb) pb.style.width = percent + '%';
+      if (pp) pp.textContent = percent + '%';
+
+      // wire up job search/filter
+      jobSearch = document.getElementById('job-search');
+      jobFilter = document.getElementById('job-filter');
+
+      if (jobSearch) jobSearch.addEventListener('input', filterJobs);
+      if (jobFilter) jobFilter.addEventListener('change', filterJobs);
+    });
+
+    // show chosen file name
+    const resumeInput = document.getElementById("resume");
+    if (resumeInput) {
+      resumeInput.addEventListener("change", function(){
+        const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+        const fileNameEl = document.getElementById("file-name");
+        if (fileNameEl) fileNameEl.textContent = fileName;
+      });
+    }
+
+    // search & filter functionality (client-side)
+    let jobSearch;
+    let jobFilter;
+    function filterJobs(){
+      if (!jobSearch || !jobFilter) return;
+      const q = jobSearch.value.trim().toLowerCase();
+      const loc = jobFilter.value;
+      const filterValue = loc.toLowerCase();
+      document.querySelectorAll('.job-card').forEach(card => {
+        const title = (card.getAttribute('data-title') || '').toLowerCase();
+        const location = (card.getAttribute('data-location') || '').toLowerCase();
+
+        const matchesQuery = !q || title.includes(q) || card.textContent.toLowerCase().includes(q);
+        const matchesLoc = loc === 'all' || location.includes(filterValue);
+
+        card.style.display = (matchesQuery && matchesLoc) ? 'flex' : 'none';
+      });
+    }
+
+    // apply job (demo) — show toast and add to history table
+    function applyJob(title, company){
+      // toast
+      const toast = document.createElement('div');
+      toast.className = 'card';
+      toast.style.position='fixed';
+      toast.style.right='24px';
+      toast.style.bottom='90px';
+      toast.style.padding='12px 16px';
+      toast.style.zIndex=3000;
+      toast.style.borderRadius='10px';
+      toast.style.boxShadow='0 8px 28px rgba(9,30,66,0.12)';
+      toast.innerHTML = `<strong>Application submitted</strong><div style="color:var(--muted);font-size:13px">${title} • ${company}</div>`;
+      document.body.appendChild(toast);
+      setTimeout(()=> toast.style.opacity=0,2200);
+      setTimeout(()=> toast.remove(),2600);
+
+      // append to job history (demo row)
+      const tbody = document.getElementById('history-body');
+      const row = document.createElement('tr');
+      const today = new Date().toISOString().split('T')[0];
+      row.innerHTML = `<td>${title}</td><td>${company}</td><td>${today}</td><td><span class="status-pill status-applied">Applied</span></td>`;
+      if (tbody) tbody.prepend(row);
+    }
+
+    // submit resume form demo - also updates display name & avatar initials
+    function submitApplication(e){
+      e.preventDefault();
+      const name = document.getElementById('fullname').value || 'Applicant';
+      const role = document.getElementById('jobtitle').value || 'Target Role';
+      applyJob(role, '—');
+      // update profile name/avatar initials
+      const displayNameEl = document.getElementById('display-name');
+      const avatarEl = document.getElementById('avatar-text');
+      if (displayNameEl) displayNameEl.textContent = name;
+      if (avatarEl) {
+        const initials = name.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+        avatarEl.textContent = initials;
+      }
+      // reset form except leave file name
+      e.target.reset();
+      const fileNameEl = document.getElementById('file-name');
+      if (fileNameEl) fileNameEl.textContent = 'No file chosen';
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('edit-fullname').value;
+      const jobtitle = document.getElementById('edit-jobtitle').value;
+
+      const displayName = document.getElementById('display-name');
+      const roleEl = document.querySelector('#profile .role');
+      const avatarEl = document.getElementById('avatar-text');
+
+      if (displayName) displayName.textContent = name;
+      if (roleEl) roleEl.textContent = jobtitle || 'Looking for opportunities';
+      if (avatarEl) {
+        const initials = name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
+        avatarEl.textContent = initials;
+      }
+
+      const form = document.getElementById('edit-profile-form');
+      if (form) form.style.display = 'none';
+
+      alert('Profile updated successfully!');
+    }
+</script>
+</body>
+</html>

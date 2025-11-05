@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Applicant</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #C3EBFF; margin: 0; padding: 0; }
+    .container { max-width: 500px; margin: 50px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+    h1 { text-align: center; color: #08106E; }
+    form { display: flex; flex-direction: column; gap: 15px; }
+    label { font-weight: bold; color: #08106E; }
+    input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; }
+    .button-group { display: flex; justify-content: flex-start; gap: 15px; margin-top: 20px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; display: inline-block; line-height: normal; }
+    .save-btn { background: #08106E; color: white; }
+    .save-btn:hover { background: #2a35b5; }
+    .cancel-btn { background: #ccc; color: black; text-decoration: none; display: inline-block; }
+    .cancel-btn:hover { background: #bbb; }
+
+    /* ✅ Toast Notification with slide-in animation */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #08106E;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateX(120%);
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Edit Applicant</h1>
+    <form id="editForm" action="{{ url_for('edit_applicant') }}" method="POST">
+      <label>Full Name</label>
+      <input type="text" name="name" value="{{ name }}" required>
+
+      <label>Email (readonly)</label>
+      <input type="email" name="email" value="{{ email }}" readonly>
+
+      <label>Date Registered</label>
+      <input type="date" name="date" value="{{ date }}">
+
+      <label>Phone</label>
+      <input type="text" name="phone" value="{{ phone }}">
+
+      <label>Address</label>
+      <input type="text" name="address" value="{{ address }}">
+
+      <label>Status</label>
+      <select name="status">
+        <option value="Active" {% if status=='Active' %}selected{% endif %}>Active</option>
+        <option value="Inactive" {% if status=='Inactive' %}selected{% endif %}>Inactive</option>
+      </select>
+
+      <div class="button-group">
+        <button type="submit" class="btn save-btn">Save Changes</button>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn cancel-btn">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- ✅ Toast Notification -->
+  <div id="toast">Changes saved successfully!</div>
+
+  <script>
+    const form = document.getElementById('editForm');
+    const toast = document.getElementById('toast');
+
+    // Store initial values to detect changes
+    const initialData = new FormData(form);
+
+    form.addEventListener('submit', function(event) {
+      const currentData = new FormData(form);
+      let changed = false;
+
+      for (let [key, value] of currentData.entries()) {
+        if (value !== initialData.get(key)) {
+          changed = true;
+          break;
+        }
+      }
+
+      if (!changed) {
+        event.preventDefault();
+        alert("No changes detected!");
+        return;
+      }
+
+      // ✅ Show sliding toast
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    });
+  </script>
+</body>
+</html>
